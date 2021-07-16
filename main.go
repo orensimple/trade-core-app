@@ -11,10 +11,12 @@ func main() {
 	viper.SetDefault("MYSQLHOST", "0.0.0.0:3306")
 	viper.SetDefault("MYSQLUSER", "root")
 	viper.SetDefault("MYSQLPASSWORD", "my-secret-pw")
+	viper.SetDefault("MYSQLDATABASE", "trade")
 
 	viper.BindEnv("MYSQLHOST", "MYSQLHOST")
 	viper.BindEnv("MYSQLUSER", "MYSQLUSER")
 	viper.BindEnv("MYSQLPASSWORD", "MYSQLPASSWORD")
+	viper.BindEnv("MYSQLDATABASE", "MYSQLDATABASE")
 
 	r := adapter.Router()
 	err := r.Run(":8082")
