@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/orensimple/trade-core-app/internal/app/adapter"
 	"github.com/spf13/viper"
 )
@@ -12,14 +14,17 @@ func main() {
 	viper.SetDefault("MYSQLUSER", "root")
 	viper.SetDefault("MYSQLPASSWORD", "my-secret-pw")
 	viper.SetDefault("MYSQLDATABASE", "trade")
+	viper.SetDefault("PORT", "8082")
 
 	viper.BindEnv("MYSQLHOST", "MYSQLHOST")
 	viper.BindEnv("MYSQLUSER", "MYSQLUSER")
 	viper.BindEnv("MYSQLPASSWORD", "MYSQLPASSWORD")
 	viper.BindEnv("MYSQLDATABASE", "MYSQLDATABASE")
+	viper.BindEnv("PORT", "PORT")
 
 	r := adapter.Router()
-	err := r.Run(":8082")
+	port := viper.Get("PORT")
+	err := r.Run(fmt.Sprintf(":%v", port))
 	if err != nil {
 		panic(err)
 	}
