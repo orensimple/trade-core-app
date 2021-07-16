@@ -16,6 +16,12 @@ func main() {
 	viper.SetDefault("MYSQLDATABASE", "trade")
 	viper.SetDefault("PORT", "8082")
 
+	viper.BindEnv("MYSQLHOST", "MYSQLHOST")
+	viper.BindEnv("MYSQLUSER", "MYSQLUSER")
+	viper.BindEnv("MYSQLPASSWORD", "MYSQLPASSWORD")
+	viper.BindEnv("MYSQLDATABASE", "MYSQLDATABASE")
+	viper.BindEnv("PORT", "PORT")
+
 	r := adapter.Router()
 	port := viper.Get("PORT")
 	err := r.Run(fmt.Sprintf(":%v", port))
