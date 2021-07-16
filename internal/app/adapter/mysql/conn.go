@@ -15,7 +15,7 @@ func Connection() (db *gorm.DB) {
 	user := viper.Get("MYSQLUSER")
 	pass := viper.Get("MYSQLPASSWORD")
 	dataBase := viper.Get("MYSQLDATABASE")
-	dsn := fmt.Sprintf("%v:%v@tcp(%v)/%v?charset=utf8mb4&parseTime=True&loc=Local", user, pass, host, dataBase)
+	dsn := fmt.Sprintf("%v:%v@tcp(%v)/%v", user, pass, host, dataBase)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)
