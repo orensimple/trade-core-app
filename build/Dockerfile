@@ -1,5 +1,5 @@
-FROM postgres
+FROM mysql:latest
 
-EXPOSE 5432
+EXPOSE 3306
 
 COPY ./init.sql /docker-entrypoint-initdb.d/

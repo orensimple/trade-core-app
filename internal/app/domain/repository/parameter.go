@@ -1,6 +1,6 @@
 package repository
 
-import "github.com/resotto/goilerplate/internal/app/domain"
+import "github.com/orensimple/trade-core-app/internal/app/domain"
 
 // IParameter is interface of parameter repository
 type IParameter interface {

@@ -1,6 +1,6 @@
 package testdata
 
-import "github.com/resotto/goilerplate/internal/app/domain/valueobject"
+import "github.com/orensimple/trade-core-app/internal/app/domain/valueobject"
 
 // MExchange is mock of service.IExchange
 type MExchange struct{}

@@ -1,6 +1,6 @@
 package valueobject
 
-// CandleStick is basic data type of trade
+// CandleStick is basic data type of trade.
 type CandleStick struct {
 	Open      string
 	High      string

@@ -1,66 +1,66 @@
 package adapter
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
-	"github.com/resotto/goilerplate/internal/app/adapter/repository"
-	"github.com/resotto/goilerplate/internal/app/adapter/service"
-	"github.com/resotto/goilerplate/internal/app/application/usecase"
-	"github.com/resotto/goilerplate/internal/app/domain/valueobject"
-)
-
-var (
-	bitbank             = service.Bitbank{}
-	parameterRepository = repository.Parameter{}
-	orderRepository     = repository.Order{}
+	"github.com/orensimple/trade-core-app/internal/app/adapter/mysql"
+	"github.com/orensimple/trade-core-app/internal/app/adapter/repository"
+	"github.com/orensimple/trade-core-app/internal/app/adapter/service"
 )
 
 // Controller is a controller
-type Controller struct{}
+type Controller struct {
+	BitbankService      service.Bitbank
+	ParameterRepository repository.Parameter
+	OrderRepository     repository.Order
+	UserRepository      repository.User
+}
+
+const identityKey = "id"
 
 // Router is routing settings
 func Router() *gin.Engine {
 	r := gin.Default()
-	ctrl := Controller{}
-	// NOTICE: following path is from CURRENT directory, so please run Gin from root directory
-	r.LoadHTMLGlob("internal/app/adapter/view/*")
-	r.GET("/", ctrl.index)
-	r.GET("/ticker", ctrl.ticker)
-	r.GET("/candlestick", ctrl.candlestick)
-	r.GET("/parameter", ctrl.parameter)
-	r.GET("/order", ctrl.order)
-	return r
-}
+	db := mysql.Connection()
 
-func (ctrl Controller) index(c *gin.Context) {
-	c.HTML(http.StatusOK, "index.tmpl", gin.H{
-		"title": "Hello Goilerplate",
-	})
-}
+	userRepository := repository.NewUserRepo(db)
+	orderRepository := repository.NewOrderRepo(db)
+	parameterRepository := repository.NewParameterRepo(db)
 
-func (ctrl Controller) ticker(c *gin.Context) {
-	pair := valueobject.BtcJpy
-	ticker := usecase.Ticker(bitbank, pair) // Dependency Injection
-	c.JSON(200, ticker)
-}
-
-func (ctrl Controller) candlestick(c *gin.Context) {
-	args := usecase.OhlcArgs{
-		E: bitbank, // Dependency Injection
-		P: valueobject.BtcJpy,
-		T: valueobject.OneMin,
+	ctrl := Controller{
+		UserRepository:      userRepository,
+		OrderRepository:     orderRepository,
+		ParameterRepository: parameterRepository,
 	}
-	candlestick := usecase.Ohlc(args)
-	c.JSON(200, candlestick)
-}
 
-func (ctrl Controller) parameter(c *gin.Context) {
-	parameter := usecase.Parameter(parameterRepository) // Dependency Injection
-	c.JSON(200, parameter)
-}
+	// init the jwt middleware
+	authMiddleware := ctrl.auth()
 
-func (ctrl Controller) order(c *gin.Context) {
-	order := usecase.AddNewCardAndEatCheese(orderRepository) // Dependency Injection
-	c.JSON(200, order)
+	r.LoadHTMLGlob("internal/app/adapter/view/*")
+	r.GET("/health", ctrl.health)
+	r.GET("/", ctrl.index)
+	r.POST("/login", authMiddleware.LoginHandler)
+	r.GET("/register", ctrl.register)
+	r.GET("/logout", authMiddleware.LogoutHandler)
+
+	auth := r.Group("/auth")
+	auth.Use(authMiddleware.MiddlewareFunc())
+	{
+		auth.GET("/refresh_token", authMiddleware.RefreshHandler)
+		auth.GET("/user/search", ctrl.userSearchHTML)
+	}
+
+	api := r.Group("/api")
+	api.Use(authMiddleware.MiddlewareFunc())
+	{
+		api.GET("/user/mock", ctrl.userMock)
+		api.GET("/user/search", ctrl.userSearch)
+
+		api.GET("/ticker", ctrl.ticker)
+		api.GET("/candlestick", ctrl.candlestick)
+
+		api.GET("/parameter", ctrl.parameter)
+		api.GET("/order", ctrl.order)
+	}
+
+	return r
 }

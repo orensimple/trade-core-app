@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/resotto/goilerplate/internal/app/domain/valueobject"
+	"github.com/orensimple/trade-core-app/internal/app/domain/valueobject"
 	"github.com/spf13/viper"
 )
 
@@ -63,7 +63,11 @@ func (b Bitbank) Ticker(p valueobject.Pair) valueobject.Ticker {
 	}
 
 	var data bitbanktickerresponse
-	json.Unmarshal(bytes, &data)
+	err = json.Unmarshal(bytes, &data)
+	if err != nil {
+		panic(err)
+	}
+
 	return valueobject.Ticker{
 		Sell:      data.Data.Sell,
 		Buy:       data.Data.Buy,
@@ -95,15 +99,21 @@ func (b Bitbank) Ohlc(p valueobject.Pair, t valueobject.Timeunit) []valueobject.
 	}
 
 	var data bitbankohlcresponse
-	json.Unmarshal(bytes, &data)
+	err = json.Unmarshal(bytes, &data)
+	if err != nil {
+		panic(err)
+	}
+
 	return convertToCandlestick(data)
 }
 
 func convertToCandlestick(res bitbankohlcresponse) []valueobject.CandleStick {
 	ohlcs := res.Data.Candlestick[0].Ohlcv
 	cs := make([]valueobject.CandleStick, 0)
+
 	for _, v := range ohlcs {
 		timestamp := strconv.FormatInt(int64(v[5].(float64)/1000), 10)
+
 		cs = append(cs, valueobject.CandleStick{
 			Open:      v[0].(string),
 			High:      v[1].(string),
@@ -113,6 +123,7 @@ func convertToCandlestick(res bitbankohlcresponse) []valueobject.CandleStick {
 			Timestamp: timestamp,
 		})
 	}
+
 	return cs
 }
 
@@ -160,8 +171,9 @@ func (b Bitbank) pairNames() []string {
 }
 
 func (b Bitbank) yyyy(t valueobject.Timeunit) string {
-	day := time.Now()
 	var layout string
+	day := time.Now()
+
 	switch t {
 	case OneMin, FiveMin, FifteenMin, ThirtyMin, OneHour:
 		layout = "20060102"

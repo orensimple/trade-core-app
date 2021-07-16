@@ -4,16 +4,16 @@ import (
 	"strings"
 )
 
-// CardBrand is credit card brands
+// CardBrand is credit card brands.
 type CardBrand string
 
-// VISA is one of CardBrand
+// VISA is one of CardBrand.
 const (
 	VISA CardBrand = "VISA"
 	AMEX CardBrand = "AMEX"
 )
 
-// ConvertToCardBrand converts string to CardBrand
+// ConvertToCardBrand converts string to CardBrand.
 func ConvertToCardBrand(s string) CardBrand {
 	switch strings.ToUpper(s) {
 	case "VISA":

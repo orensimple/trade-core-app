@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"github.com/resotto/goilerplate/internal/app/domain"
-	"github.com/resotto/goilerplate/internal/app/domain/repository"
+	"github.com/orensimple/trade-core-app/internal/app/domain"
+	"github.com/orensimple/trade-core-app/internal/app/domain/repository"
 )
 
 // Parameter is the usecase of getting parameter

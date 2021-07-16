@@ -3,9 +3,9 @@ package usecase_test
 import (
 	"testing"
 
-	"github.com/resotto/goilerplate/internal/app/application/usecase"
-	"github.com/resotto/goilerplate/internal/app/domain/valueobject"
-	"github.com/resotto/goilerplate/testdata"
+	"github.com/orensimple/trade-core-app/internal/app/application/usecase"
+	"github.com/orensimple/trade-core-app/internal/app/domain/valueobject"
+	"github.com/orensimple/trade-core-app/testdata"
 )
 
 func TestTicker(t *testing.T) {
