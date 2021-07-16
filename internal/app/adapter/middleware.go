@@ -2,9 +2,12 @@ package adapter
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/spf13/viper"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
@@ -86,11 +89,10 @@ func (ctrl Controller) auth() *jwt.GinJWTMiddleware {
 		SendCookie:     true,
 		SecureCookie:   false, // non HTTPS dev environments
 		CookieHTTPOnly: true,  // JS can't modify
-		CookieDomain:   "localhost",
+		CookieDomain:   fmt.Sprintf("%v", viper.Get("DOMAIN")),
 		CookieName:     "token", // default jwt
 		CookieSameSite: http.SameSiteDefaultMode,
 	})
-
 	if err != nil {
 		log.Fatal("JWT Error:" + err.Error())
 	}
