@@ -47,7 +47,7 @@ func (u User) Get(f *domain.User) (*domain.User, error) {
 func (u User) Search(f *domain.User) ([]*domain.User, error) {
 	out := make([]*domain.User, 0)
 
-	sql := "select users.* from users where first_name like ? and last_name like ? order by id"
+	sql := "select users.* from users where first_name like ? and last_name like ? limit 100"
 	err := u.repo.Raw(sql, fmt.Sprintf("%s%%", f.FirstName), fmt.Sprintf("%s%%", f.LastName)).Find(&out).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

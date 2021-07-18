@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"errors"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -50,6 +51,11 @@ func (ctrl Controller) register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong request params, gender"})
 
 		return
+	}
+
+	_, err = usecase.GetUser(ctrl.UserRepository, &domain.User{Email: req.Email})
+	if err != errors.New("not found") {
+		c.JSON(http.StatusConflict, domain.SimpleResponse{Status: "user with such mail exists"})
 	}
 
 	newUser := domain.User{
