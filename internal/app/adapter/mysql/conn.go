@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/prometheus/common/log"
+
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -18,12 +20,12 @@ func Connection() (db *gorm.DB) {
 	dsn := fmt.Sprintf("%v:%v@tcp(%v)/%v", user, pass, host, dataBase)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic(err)
+		log.Error(err)
 	}
 
 	sqlDB, err := db.DB()
 	if err != nil {
-		panic(err)
+		log.Error(err)
 	}
 
 	sqlDB.SetMaxIdleConns(10)

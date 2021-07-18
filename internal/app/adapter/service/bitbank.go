@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/prometheus/common/log"
+
 	"github.com/orensimple/trade-core-app/internal/app/domain/valueobject"
 	"github.com/spf13/viper"
 )
@@ -53,19 +55,19 @@ func (b Bitbank) Ticker(p valueobject.Pair) valueobject.Ticker {
 	url := fmt.Sprintf("%v/%v/ticker", host, pair)
 	res, err := http.Get(url)
 	if err != nil {
-		panic(err)
+		log.Error(err)
 	}
 	defer res.Body.Close()
 
 	bytes, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		panic(err)
+		log.Error(err)
 	}
 
 	var data bitbanktickerresponse
 	err = json.Unmarshal(bytes, &data)
 	if err != nil {
-		panic(err)
+		log.Error(err)
 	}
 
 	return valueobject.Ticker{
@@ -89,19 +91,19 @@ func (b Bitbank) Ohlc(p valueobject.Pair, t valueobject.Timeunit) []valueobject.
 	url := fmt.Sprintf("%v/%v/candlestick/%v/%v", host, pair, timeunit, yyyy)
 	res, err := http.Get(url)
 	if err != nil {
-		panic(err)
+		log.Error(err)
 	}
 	defer res.Body.Close()
 
 	bytes, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		panic(err)
+		log.Error(err)
 	}
 
 	var data bitbankohlcresponse
 	err = json.Unmarshal(bytes, &data)
 	if err != nil {
-		panic(err)
+		log.Error(err)
 	}
 
 	return convertToCandlestick(data)

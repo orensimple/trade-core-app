@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/orensimple/trade-core-app/internal/app/adapter/mysql/model"
 	"github.com/orensimple/trade-core-app/internal/app/domain"
+	"github.com/prometheus/common/log"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +21,7 @@ func (r Parameter) Get() domain.Parameter {
 	var param model.Parameter
 	result := r.repo.First(&param, 1)
 	if result.Error != nil {
-		panic(result.Error)
+		log.Error(result.Error)
 	}
 
 	return domain.Parameter{

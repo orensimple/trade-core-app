@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/prometheus/common/log"
+
 	"github.com/orensimple/trade-core-app/internal/app/adapter"
 	"github.com/spf13/viper"
 )
@@ -28,6 +30,6 @@ func main() {
 	port := viper.Get("PORT")
 	err := r.Run(fmt.Sprintf(":%v", port))
 	if err != nil {
-		panic(err)
+		log.Error(err)
 	}
 }
