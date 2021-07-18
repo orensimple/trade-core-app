@@ -14,6 +14,7 @@ type User struct {
 	Password  string    `gorm:"type:text;not null"`
 	FirstName string    `gorm:"type:text;not null"`
 	LastName  string    `gorm:"type:text;not null"`
+	Passport  int       `gorm:"type:int;not null"`
 	Male      bool      `gorm:"type:bool"`
 	About     string    `gorm:"type:text"`
 	Address   string    `gorm:"type:text"`

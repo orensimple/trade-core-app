@@ -2,6 +2,8 @@ package adapter
 
 import (
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -28,22 +30,45 @@ func (ctrl Controller) userSearchHTML(c *gin.Context) {
 }
 
 func (ctrl Controller) register(c *gin.Context) {
-	hash, err := bcrypt.GenerateFromPassword([]byte("admin"), bcrypt.MinCost)
+	var req domain.RegisterRequest
+	err := c.ShouldBind(&req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong request params"})
+
+		return
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.MinCost)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, domain.SimpleResponse{Status: "failed generate hash password"})
 
 		return
 	}
 
-	newUser := domain.User{
-		ID:        uuid.New(),
-		FirstName: "NewCrate",
-		Email:     "new@mail.ru",
-		Password:  string(hash),
+	male, err := strconv.ParseBool(req.Male)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong request params, gender"})
+
+		return
 	}
 
-	user, _ := usecase.CreateUser(ctrl.UserRepository, &newUser)
-	c.JSON(http.StatusOK, user)
+	newUser := domain.User{
+		ID: uuid.New(),
+		// TODO key by email
+		Email:     req.Email,
+		Password:  string(hash),
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Passport:  req.Passport,
+		Address:   req.Address,
+		About:     req.About,
+		Male:      male,
+	}
+
+	usecase.CreateUser(ctrl.UserRepository, &newUser)
+
+	location := url.URL{Path: "/"}
+	c.Redirect(http.StatusFound, location.RequestURI())
 }
 
 func (ctrl Controller) userMock(c *gin.Context) {

@@ -30,6 +30,10 @@
               box-sizing: border-box;
               font-size: 14px;
             }
+            .form label {
+              font-family: "Roboto", sans-serif;
+              font-size: 14px;
+            }
             .form button {
               font-family: "Roboto", sans-serif;
               text-transform: uppercase;
@@ -103,11 +107,8 @@
               -moz-osx-font-smoothing: grayscale;
             }
         </style>
-        <script>
-            $('.message a').click(function(){
-               $('form').animate({height: "toggle", opacity: "toggle"}, "slow");
-            });
-        </script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     </head>
     <body>
         <h1>
@@ -116,9 +117,17 @@
         <div class="login-page">
           <div class="form">
             <form class="register-form" action="/register" method="POST">
-              <input name="name" type="text" placeholder="name"/>
+              <input name="email" type="email" placeholder="email address"/>
               <input name="password" type="password" placeholder="password"/>
-              <input name="email" type="text" placeholder="email address"/>
+              <input name="first_name" type="text" placeholder="first name"/>
+              <input name="last_name" type="text" placeholder="last name"/>
+              <input name="passport" type="number" placeholder="series and number of passport"/>
+              <input name="address" type="number" placeholder="registration address"/>
+              <input name="about" type="number" placeholder="additional Information"/>
+              <table><tr>
+                  <td style="width: 75%;"><label for="male"><input type="radio" id="male" name="male" value="true">Male</label></td>
+                  <td><label for="female"><input type="radio" id="female" name="male" value="false">Female</label></td>
+              </tr></table>
               <button>create</button>
               <p class="message">Already registered? <a href="#">Sign In</a></p>
             </form>
@@ -131,4 +140,9 @@
           </div>
         </div>
     </body>
+            <script>
+                $('.message a').click(function(){
+                   $('form').animate({height: "toggle", opacity: "toggle"}, "slow");
+                });
+            </script>
 </html>

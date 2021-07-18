@@ -39,7 +39,7 @@ func Router() *gin.Engine {
 	r.GET("/health", ctrl.health)
 	r.GET("/", ctrl.index)
 	r.POST("/login", authMiddleware.LoginHandler)
-	r.GET("/register", ctrl.register)
+	r.POST("/register", ctrl.register)
 	r.GET("/logout", authMiddleware.LogoutHandler)
 
 	auth := r.Group("/auth")
