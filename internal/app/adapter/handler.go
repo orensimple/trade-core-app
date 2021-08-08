@@ -1,10 +1,10 @@
 package adapter
 
 import (
-	"errors"
 	"net/http"
-	"net/url"
 	"strconv"
+
+	"github.com/prometheus/common/log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -34,6 +34,7 @@ func (ctrl Controller) register(c *gin.Context) {
 	var req domain.RegisterRequest
 	err := c.ShouldBind(&req)
 	if err != nil {
+		log.Error(err)
 		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong request params"})
 
 		return
@@ -41,6 +42,7 @@ func (ctrl Controller) register(c *gin.Context) {
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.MinCost)
 	if err != nil {
+		log.Error(err)
 		c.JSON(http.StatusInternalServerError, domain.SimpleResponse{Status: "failed generate hash password"})
 
 		return
@@ -48,14 +50,23 @@ func (ctrl Controller) register(c *gin.Context) {
 
 	male, err := strconv.ParseBool(req.Male)
 	if err != nil {
+		log.Error(err)
 		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong request params, gender"})
 
 		return
 	}
 
-	_, err = usecase.GetUser(ctrl.UserRepository, &domain.User{Email: req.Email})
-	if err != errors.New("not found") {
+	user, err := usecase.GetUser(ctrl.UserRepository, &domain.User{Email: req.Email})
+	if err != nil && err.Error() != "user not found" {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "failed get user"})
+
+		return
+	}
+	if user != nil {
 		c.JSON(http.StatusConflict, domain.SimpleResponse{Status: "user with such mail exists"})
+
+		return
 	}
 
 	newUser := domain.User{
@@ -73,13 +84,15 @@ func (ctrl Controller) register(c *gin.Context) {
 
 	usecase.CreateUser(ctrl.UserRepository, &newUser)
 
-	location := url.URL{Path: "/"}
-	c.Redirect(http.StatusFound, location.RequestURI())
+	// location := url.URL{Path: "/"}
+	// c.Redirect(http.StatusFound, location.RequestURI())
+	c.JSON(http.StatusOK, newUser)
 }
 
 func (ctrl Controller) userMock(c *gin.Context) {
 	err := usecase.CreateUsersMock(ctrl.UserRepository, 1000000)
 	if err != nil {
+		log.Error(err)
 		c.JSON(http.StatusInternalServerError, domain.SimpleResponse{Status: "failed generate hash password"})
 
 		return
@@ -92,6 +105,7 @@ func (ctrl Controller) userSearch(c *gin.Context) {
 	var req domain.UserSearchRequest
 	err := c.ShouldBindQuery(&req)
 	if err != nil {
+		log.Error(err)
 		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong request params"})
 
 		return
@@ -99,6 +113,121 @@ func (ctrl Controller) userSearch(c *gin.Context) {
 
 	res, _ := usecase.SearchUsers(ctrl.UserRepository, &domain.User{LastName: req.LastName, FirstName: req.FirstName})
 	c.JSON(http.StatusOK, res)
+}
+
+func (ctrl Controller) userGet(c *gin.Context) {
+	id := c.Param("id")
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong id"})
+
+		return
+	}
+
+	res, err := usecase.GetUser(ctrl.UserRepository, &domain.User{ID: uuid})
+	if err != nil && err.Error() != "user not found" {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "failed get user"})
+
+		return
+	}
+	if res == nil {
+		c.JSON(http.StatusNotFound, domain.SimpleResponse{Status: "user not found"})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, res)
+}
+
+func (ctrl Controller) userUpdate(c *gin.Context) {
+	id := c.Param("id")
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong id"})
+
+		return
+	}
+
+	user, err := usecase.GetUser(ctrl.UserRepository, &domain.User{ID: uuid})
+	if err != nil && err.Error() != "user not found" {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "failed get user"})
+
+		return
+	}
+	if user == nil {
+		c.JSON(http.StatusNotFound, domain.SimpleResponse{Status: "user not found"})
+
+		return
+	}
+
+	var req domain.RegisterRequest
+	err = c.ShouldBind(&req)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong request params"})
+
+		return
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.MinCost)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, domain.SimpleResponse{Status: "failed generate hash password"})
+
+		return
+	}
+
+	male, err := strconv.ParseBool(req.Male)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong request params, gender"})
+
+		return
+	}
+
+	user.Email = req.Email
+	user.Password = string(hash)
+	user.FirstName = req.FirstName
+	user.LastName = req.LastName
+	user.Passport = req.Passport
+	user.Address = req.Address
+	user.About = req.About
+	user.Male = male
+
+	err = usecase.UpdateUser(ctrl.UserRepository, user)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, domain.SimpleResponse{Status: "failed delete user"})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+func (ctrl Controller) userDelete(c *gin.Context) {
+	id := c.Param("id")
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong id"})
+
+		return
+	}
+
+	err = usecase.DeleteUser(ctrl.UserRepository, &domain.User{ID: uuid})
+	if err != nil {
+		log.Error(err)
+		c.JSON(http.StatusInternalServerError, domain.SimpleResponse{Status: "failed delete user"})
+
+		return
+	}
+
+	c.JSON(http.StatusOK, domain.SimpleResponse{Status: "OK"})
 }
 
 func (ctrl Controller) ticker(c *gin.Context) {

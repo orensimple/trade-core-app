@@ -51,7 +51,7 @@ type Bitbank struct{}
 // Ticker gets ticker via bitbank public api
 func (b Bitbank) Ticker(p valueobject.Pair) valueobject.Ticker {
 	pair := b.convertPair(p)
-	host := viper.Get("BITBANK_HOST")
+	host := viper.Get("bitbank_host")
 	url := fmt.Sprintf("%v/%v/ticker", host, pair)
 	res, err := http.Get(url)
 	if err != nil {
@@ -87,7 +87,7 @@ func (b Bitbank) Ohlc(p valueobject.Pair, t valueobject.Timeunit) []valueobject.
 	pair := b.convertPair(p)
 	timeunit := b.convertTimeunit(t)
 	yyyy := b.yyyy(t)
-	host := viper.Get("BITBANK_HOST")
+	host := viper.Get("bitbank_host")
 	url := fmt.Sprintf("%v/%v/candlestick/%v/%v", host, pair, timeunit, yyyy)
 	res, err := http.Get(url)
 	if err != nil {

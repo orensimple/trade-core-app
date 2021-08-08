@@ -12,6 +12,7 @@ type User struct {
 	ID        uuid.UUID `gorm:"type:uuid"`
 	Email     string    `gorm:"type:text;not null"`
 	Password  string    `gorm:"type:text;not null"`
+	Phone     string    `gorm:"type:text"`
 	FirstName string    `gorm:"type:text;not null"`
 	LastName  string    `gorm:"type:text;not null"`
 	Passport  int       `gorm:"type:int;not null"`

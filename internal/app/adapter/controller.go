@@ -5,6 +5,7 @@ import (
 	"github.com/orensimple/trade-core-app/internal/app/adapter/mysql"
 	"github.com/orensimple/trade-core-app/internal/app/adapter/repository"
 	"github.com/orensimple/trade-core-app/internal/app/adapter/service"
+	"github.com/penglongli/gin-metrics/ginmetrics"
 )
 
 // Controller is a controller
@@ -21,6 +22,13 @@ const identityKey = "id"
 func Router() *gin.Engine {
 	r := gin.Default()
 	db := mysql.Connection()
+
+	// init prometheus metrics
+	m := ginmetrics.GetMonitor()
+	m.SetMetricPath("/metrics")
+	m.SetSlowTime(10)
+	m.SetDuration([]float64{0.1, 0.3, 1.2, 5, 10})
+	m.Use(r)
 
 	userRepository := repository.NewUserRepo(db)
 	orderRepository := repository.NewOrderRepo(db)
@@ -46,14 +54,18 @@ func Router() *gin.Engine {
 	auth.Use(authMiddleware.MiddlewareFunc())
 	{
 		auth.GET("/refresh_token", authMiddleware.RefreshHandler)
-		auth.GET("/user/search", ctrl.userSearchHTML)
+		auth.GET("/users/search", ctrl.userSearchHTML)
 	}
 
 	api := r.Group("/api")
-	api.Use(authMiddleware.MiddlewareFunc())
+	// api.Use(authMiddleware.MiddlewareFunc())
 	{
-		api.GET("/user/mock", ctrl.userMock)
-		api.GET("/user/search", ctrl.userSearch)
+		api.POST("/user", ctrl.register)
+		api.GET("/user/:id", ctrl.userGet)
+		api.PUT("/user/:id", ctrl.userUpdate)
+		api.DELETE("/user/:id", ctrl.userDelete)
+		api.GET("/users/search/", ctrl.userSearch)
+		api.GET("/users/mock/", ctrl.userMock)
 
 		api.GET("/ticker", ctrl.ticker)
 		api.GET("/candlestick", ctrl.candlestick)

@@ -9,5 +9,7 @@ type User interface {
 	Create(u *domain.User) error
 	Search(f *domain.User) ([]*domain.User, error)
 	Get(f *domain.User) (*domain.User, error)
+	Update(f *domain.User) error
+	Delete(f *domain.User) error
 	Creates(u []domain.User) error
 }

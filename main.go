@@ -10,25 +10,30 @@ import (
 )
 
 func main() {
-	viper.SetDefault("BITBANK_HOST", "https://public.bitbank.cc")
+	viper.SetDefault("bitbank_host", "https://public.bitbank.cc")
 	// for local development
-	viper.SetDefault("MYSQLHOST", "0.0.0.0:3306")
-	viper.SetDefault("MYSQLUSER", "root")
-	viper.SetDefault("MYSQLPASSWORD", "my-secret-pw")
-	viper.SetDefault("MYSQLDATABASE", "trade")
-	viper.SetDefault("PORT", "8083")
-	viper.SetDefault("DOMAIN", "localhost")
+	viper.SetDefault("mysql_host", "0.0.0.0")
+	viper.SetDefault("mysql_port", "3306")
+	viper.SetDefault("mysql_user", "root")
+	viper.SetDefault("mysql_password", "my-secret-pw")
+	viper.SetDefault("mysql_database", "trade")
+	viper.SetDefault("app_port", "80")
+	viper.SetDefault("app_domain", "localhost")
 
-	viper.BindEnv("MYSQLHOST", "MYSQLHOST")
-	viper.BindEnv("MYSQLUSER", "MYSQLUSER")
-	viper.BindEnv("MYSQLPASSWORD", "MYSQLPASSWORD")
-	viper.BindEnv("MYSQLDATABASE", "MYSQLDATABASE")
-	viper.BindEnv("PORT", "PORT")
-	viper.BindEnv("DOMAIN", "DOMAIN")
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("/config/")
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Error(err)
+	}
+
+	viper.BindEnv("mysql_user", "MYSQL_USER")
+	viper.BindEnv("mysql_password", "MYSQL_PASSWORD")
 
 	r := adapter.Router()
-	port := viper.Get("PORT")
-	err := r.Run(fmt.Sprintf(":%v", port))
+	port := viper.Get("app_port")
+	err = r.Run(fmt.Sprintf(":%v", port))
 	if err != nil {
 		log.Error(err)
 	}

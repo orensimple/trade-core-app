@@ -6,6 +6,7 @@ import "github.com/google/uuid"
 type User struct {
 	ID        uuid.UUID
 	Email     string
+	Phone     string
 	Password  string
 	FirstName string
 	LastName  string
@@ -19,6 +20,7 @@ type User struct {
 type RegisterRequest struct {
 	Email     string `form:"email" json:"email" binding:"required"`
 	Password  string `form:"password" json:"password" binding:"required"`
+	Phone     string `form:"phone" json:"phone"`
 	FirstName string `form:"first_name" json:"first_name" binding:"required"`
 	LastName  string `form:"last_name" json:"last_name" binding:"required"`
 	Passport  int    `form:"passport" json:"passport" binding:"required"`

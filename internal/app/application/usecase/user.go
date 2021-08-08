@@ -31,6 +31,16 @@ func GetUser(r repository.User, f *domain.User) (*domain.User, error) {
 	return res, err
 }
 
+// UpdateUser update user
+func UpdateUser(r repository.User, f *domain.User) error {
+	return r.Update(f)
+}
+
+// DeleteUser delete user by id
+func DeleteUser(r repository.User, f *domain.User) error {
+	return r.Delete(f)
+}
+
 // CreateUsersMock create new mock users for tests
 func CreateUsersMock(r repository.User, count int) error {
 	var err error

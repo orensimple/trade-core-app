@@ -75,7 +75,7 @@ func (ctrl Controller) auth() *jwt.GinJWTMiddleware {
 
 		// TODO deprecated
 		LoginResponse: func(c *gin.Context, i int, s string, t time.Time) {
-			location := url.URL{Path: "/auth/user/search"}
+			location := url.URL{Path: "/auth/users/search"}
 			c.Redirect(http.StatusFound, location.RequestURI())
 		},
 
@@ -89,7 +89,7 @@ func (ctrl Controller) auth() *jwt.GinJWTMiddleware {
 		SendCookie:     true,
 		SecureCookie:   false, // non HTTPS dev environments
 		CookieHTTPOnly: true,  // JS can't modify
-		CookieDomain:   fmt.Sprintf("%v", viper.Get("DOMAIN")),
+		CookieDomain:   fmt.Sprintf("%v", viper.Get("app_domain")),
 		CookieName:     "token", // default jwt
 		CookieSameSite: http.SameSiteDefaultMode,
 	})

@@ -31,7 +31,7 @@ func (u User) Create(user *domain.User) error {
 func (u User) Get(f *domain.User) (*domain.User, error) {
 	out := new(domain.User)
 
-	err := u.repo.Debug().Where(f).Take(out).Error
+	err := u.repo.Where(f).Take(out).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("user not found")
@@ -43,12 +43,22 @@ func (u User) Get(f *domain.User) (*domain.User, error) {
 	return out, nil
 }
 
+// Update user info by id
+func (u User) Update(user *domain.User) error {
+	return u.repo.Debug().Save(&user).Error
+}
+
+// Delete user by id
+func (u User) Delete(f *domain.User) error {
+	return u.repo.Delete(&f).Error
+}
+
 // Search get user by firstname and lastname
 func (u User) Search(f *domain.User) ([]*domain.User, error) {
 	out := make([]*domain.User, 0)
 
-	sql := "select users.* from users where first_name like ? and last_name like ? limit 100"
-	err := u.repo.Raw(sql, fmt.Sprintf("%s%%", f.FirstName), fmt.Sprintf("%s%%", f.LastName)).Find(&out).Error
+	sql := "select users.* from users where last_name like ? and first_name like ? order by id limit 100"
+	err := u.repo.Raw(sql, fmt.Sprintf("%s%%", f.LastName), fmt.Sprintf("%s%%", f.FirstName)).Find(&out).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return out, nil
