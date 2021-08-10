@@ -13,6 +13,8 @@ func main() {
 	viper.SetDefault("bitbank_host", "https://public.bitbank.cc")
 	// for local development
 	viper.SetDefault("mysql_host", "0.0.0.0")
+	viper.SetDefault("mysql_replica_enabled", "false")
+	viper.SetDefault("mysql_replica_count", "0")
 	viper.SetDefault("mysql_port", "3306")
 	viper.SetDefault("mysql_user", "root")
 	viper.SetDefault("mysql_password", "my-secret-pw")
