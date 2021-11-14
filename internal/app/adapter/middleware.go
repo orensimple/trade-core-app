@@ -4,8 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/spf13/viper"
 
@@ -27,7 +28,7 @@ func (ctrl Controller) auth() *jwt.GinJWTMiddleware {
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*domain.User); ok {
 				return jwt.MapClaims{
-					identityKey: v.Email,
+					identityKey: v.ID,
 				}
 			}
 
@@ -35,8 +36,9 @@ func (ctrl Controller) auth() *jwt.GinJWTMiddleware {
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
+			id, _ := uuid.Parse(claims[identityKey].(string))
 			return &domain.User{
-				Email: claims[identityKey].(string),
+				ID: id,
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
@@ -57,7 +59,9 @@ func (ctrl Controller) auth() *jwt.GinJWTMiddleware {
 			return user, nil
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			if _, ok := data.(*domain.User); ok {
+			if user, ok := data.(*domain.User); ok {
+				c.Set("user", user)
+
 				return true
 			}
 
@@ -65,22 +69,24 @@ func (ctrl Controller) auth() *jwt.GinJWTMiddleware {
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			// TODO deprecated
-			location := url.URL{Path: "/"}
-			c.Redirect(http.StatusFound, location.RequestURI())
+			// location := url.URL{Path: "/"}
+			// c.Redirect(http.StatusFound, location.RequestURI())
 			c.JSON(code, gin.H{
-				"code":    code,
-				"message": message,
+				"code":    http.StatusUnauthorized,
+				"message": "unauthorized",
 			})
+
+			return
 		},
 
 		// TODO deprecated
-		LoginResponse: func(c *gin.Context, i int, s string, t time.Time) {
-			location := url.URL{Path: "/auth/users/search"}
-			c.Redirect(http.StatusFound, location.RequestURI())
-		},
+		// LoginResponse: func(c *gin.Context, i int, s string, t time.Time) {
+		//	location := url.URL{Path: "/auth/users/search"}
+		//	c.Redirect(http.StatusFound, location.RequestURI())
+		//},
 
 		// Read cookie
-		TokenLookup:   "cookie:token",
+		TokenLookup:   "header: Authorization, query: token, cookie: jwt",
 		TokenHeadName: "Bearer",
 
 		TimeFunc: time.Now,
@@ -90,18 +96,18 @@ func (ctrl Controller) auth() *jwt.GinJWTMiddleware {
 		SecureCookie:   false, // non HTTPS dev environments
 		CookieHTTPOnly: true,  // JS can't modify
 		CookieDomain:   fmt.Sprintf("%v", viper.Get("app_domain")),
-		CookieName:     "token", // default jwt
+		CookieName:     "jwt", // default jwt
 		CookieSameSite: http.SameSiteDefaultMode,
 	})
 	if err != nil {
-		log.Fatal("JWT Error:" + err.Error())
+		log.Error("JWT Error:" + err.Error())
 	}
 
 	// When you use jwt.New(), the function is already automatically called for checking,
 	// which means you don't need to call it again.
 	errInit := authMiddleware.MiddlewareInit()
 	if errInit != nil {
-		log.Fatal("authMiddleware.MiddlewareInit() Error:" + errInit.Error())
+		log.Error("authMiddleware.MiddlewareInit() Error:" + errInit.Error())
 	}
 
 	return authMiddleware

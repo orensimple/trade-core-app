@@ -31,7 +31,7 @@ func (u User) Create(user *domain.User) error {
 func (u User) Get(f *domain.User) (*domain.User, error) {
 	out := new(domain.User)
 
-	err := u.repo.Where(f).Take(out).Error
+	err := u.repo.Where(f).Preload("Accounts").Take(out).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("user not found")

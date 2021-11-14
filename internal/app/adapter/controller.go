@@ -11,9 +11,11 @@ import (
 // Controller is a controller
 type Controller struct {
 	BitbankService      service.Bitbank
+	BillingService      service.Billing
+	OrderService        service.Order
 	ParameterRepository repository.Parameter
-	OrderRepository     repository.Order
 	UserRepository      repository.User
+	AccountRepository   repository.Account
 }
 
 const identityKey = "id"
@@ -31,12 +33,12 @@ func Router() *gin.Engine {
 	m.Use(r)
 
 	userRepository := repository.NewUserRepo(db)
-	orderRepository := repository.NewOrderRepo(db)
+	accountRepository := repository.NewAccountRepo(db)
 	parameterRepository := repository.NewParameterRepo(db)
 
 	ctrl := Controller{
 		UserRepository:      userRepository,
-		OrderRepository:     orderRepository,
+		AccountRepository:   accountRepository,
 		ParameterRepository: parameterRepository,
 	}
 
@@ -58,7 +60,7 @@ func Router() *gin.Engine {
 	}
 
 	api := r.Group("/api")
-	// api.Use(authMiddleware.MiddlewareFunc())
+	api.Use(authMiddleware.MiddlewareFunc())
 	{
 		api.POST("/user", ctrl.register)
 		api.GET("/user/:id", ctrl.userGet)
@@ -67,11 +69,14 @@ func Router() *gin.Engine {
 		api.GET("/users/search/", ctrl.userSearch)
 		api.GET("/users/mock/", ctrl.userMock)
 
+		api.GET("/account", ctrl.createAccount)
+		api.POST("/order", ctrl.createOrder)
+		api.DELETE("/order/:id", ctrl.deleteOrder)
+
 		api.GET("/ticker", ctrl.ticker)
 		api.GET("/candlestick", ctrl.candlestick)
 
 		api.GET("/parameter", ctrl.parameter)
-		api.GET("/order", ctrl.order)
 	}
 
 	return r

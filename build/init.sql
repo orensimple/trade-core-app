@@ -25,31 +25,22 @@ CREATE INDEX user_first_name_last_name_idx ON users ( first_name, last_name );
 
 CREATE INDEX user_email_idx ON users (email);
 
-create table card_brands (
-    brand VARCHAR(36) primary key
-);
-
-create table cards (
-    card_id VARCHAR(36) primary key,
-    brand text references card_brands(brand) on update cascade
-);
-
-create table orders (
-    order_id VARCHAR(36) primary key,
-    user_id VARCHAR(36) references users(id)
-);
-
-create table payments (
-    order_id VARCHAR(36) primary key references orders(order_id),
-    card_id VARCHAR(36) references cards(card_id)
-);
-
 insert into users values ('f3bf75a9-ea4c-4f57-9161-cfa8f96e2d0b', 'admin@mail.ru', '$2a$04$Q65Ug0F8llqw4DOPZ13gu.iWR7pDu7zwEdg9SxElmdUQoKnpD2CGe', 'Ivan', 'Ivanov', true, 'test', 'Moscow');
 
-insert into card_brands values ('VISA'), ('AMEX');
+create table accounts
+(
+    id            varchar(36)  not null,
+    user_id       varchar(36)  not null,
+    account_id    varchar(36)  not null,
+    currency_code varchar(256) null,
+    primary key (user_id, account_id),
+    constraint user_accounts_id_uindex
+        unique (id),
+    constraint user_accounts_users_id_fk
+        foreign key (user_id) references users (id)
+);
 
-insert into cards values ('3224ebc0-0a6e-4e22-9ce8-c6564a1bb6a1', 'VISA');
+create index user_accounts_accounts_id_fk
+    on accounts (account_id);
 
-insert into orders values ('722b694c-984c-4208-bddd-796553cf83e1', 'f3bf75a9-ea4c-4f57-9161-cfa8f96e2d0b');
-
-insert into payments values ('722b694c-984c-4208-bddd-796553cf83e1', '3224ebc0-0a6e-4e22-9ce8-c6564a1bb6a1');
+INSERT INTO trade.accounts (id, user_id, account_id, currency_code) VALUES ('a02bc569-8de4-496b-ad19-984bbcf2ed26', 'f3bf75a9-ea4c-4f57-9161-cfa8f96e2d0b', 'd84db1a4-4f6c-4871-9ffa-1b3564c44111', 'RU');

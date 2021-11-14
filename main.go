@@ -11,6 +11,8 @@ import (
 
 func main() {
 	viper.SetDefault("bitbank_host", "https://public.bitbank.cc")
+	viper.SetDefault("billing_host", "http://localhost:8081")
+	viper.SetDefault("order_host", "http://localhost:8082")
 	// for local development
 	viper.SetDefault("mysql_host", "0.0.0.0")
 	viper.SetDefault("mysql_replica_enabled", "false")
@@ -30,8 +32,14 @@ func main() {
 		log.Error(err)
 	}
 
-	viper.BindEnv("mysql_user", "MYSQL_USER")
-	viper.BindEnv("mysql_password", "MYSQL_PASSWORD")
+	err = viper.BindEnv("mysql_user", "MYSQL_USER")
+	if err != nil {
+		log.Error(err)
+	}
+	err = viper.BindEnv("mysql_password", "MYSQL_PASSWORD")
+	if err != nil {
+		log.Error(err)
+	}
 
 	r := adapter.Router()
 	port := viper.Get("app_port")

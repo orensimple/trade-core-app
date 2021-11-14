@@ -2,18 +2,25 @@ package domain
 
 import "github.com/google/uuid"
 
-// User is user in app.
+// User is the model of User
 type User struct {
-	ID        uuid.UUID
-	Email     string
-	Phone     string
-	Password  string
-	FirstName string
-	LastName  string
-	Passport  int
-	Male      bool
-	About     string
-	Address   string
+	ID        uuid.UUID `gorm:"type:uuid;pk"`
+	Email     string    `gorm:"type:text;not null"`
+	Password  string    `gorm:"type:text;not null"`
+	Phone     string    `gorm:"type:text"`
+	FirstName string    `gorm:"type:text;not null"`
+	LastName  string    `gorm:"type:text;not null"`
+	Passport  int       `gorm:"type:int;not null"`
+	Male      bool      `gorm:"type:bool"`
+	About     string    `gorm:"type:text"`
+	Address   string    `gorm:"type:text"`
+
+	Accounts []*Account `gorm:"foreignKey:UserID;association_foreignKey:ID"`
+}
+
+// TableName gets table name of User
+func (User) TableName() string {
+	return "users"
 }
 
 // RegisterRequest struct for registration.
