@@ -25,7 +25,7 @@ func (u Account) Create(account *domain.Account) error {
 func (u Account) Get(f *domain.Account) (*domain.Account, error) {
 	out := new(domain.Account)
 
-	err := u.repo.Where(f).Preload("Accounts").Take(out).Error
+	err := u.repo.Where(f).Take(out).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("account not found")

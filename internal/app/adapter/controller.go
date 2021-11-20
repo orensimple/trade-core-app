@@ -69,7 +69,9 @@ func Router() *gin.Engine {
 		api.GET("/users/search/", ctrl.userSearch)
 		api.GET("/users/mock/", ctrl.userMock)
 
-		api.GET("/account", ctrl.createAccount)
+		api.GET("/account", ctrl.findAccounts)
+		api.POST("/account", ctrl.createAccount)
+		api.GET("/order", ctrl.findOrders)
 		api.POST("/order", ctrl.createOrder)
 		api.DELETE("/order/:id", ctrl.deleteOrder)
 

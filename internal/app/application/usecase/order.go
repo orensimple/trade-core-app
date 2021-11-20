@@ -14,3 +14,8 @@ func CreateOrder(e service.Order, u *domain.Order) (*domain.Order, error) {
 func DeleteOrder(e service.Order, u *domain.Order) (*domain.Order, error) {
 	return e.Delete(u)
 }
+
+// FindOrders is the UseCase of find orders
+func FindOrders(e service.Order, u *domain.Account) ([]*domain.Order, error) {
+	return e.Find(u)
+}

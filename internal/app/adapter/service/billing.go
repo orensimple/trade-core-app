@@ -77,3 +77,40 @@ func (b Billing) Create(u *domain.User) (*BillingCreateResponse, error) {
 
 	return resp, nil
 }
+
+func (b Billing) Get(u *domain.Account) (*BillingCreateResponse, error) {
+	host := viper.Get("billing_host")
+	url := fmt.Sprintf("%v/api/account/%s", host, u.AccountID)
+
+	log.Info("Sending request")
+	res, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	log.Infof("Dump response with code, '%d'", res.StatusCode)
+	dump, err := httputil.DumpResponse(res, true)
+	if err == nil {
+		log.Debugf("account response '%q", dump)
+	}
+	if err != nil {
+		return nil, err
+	}
+	if res.StatusCode != 200 {
+		return nil, errors.New("something wrong")
+	}
+
+	bytes, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp *BillingCreateResponse
+	err = json.Unmarshal(bytes, &resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}

@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/orensimple/trade-core-app/internal/app/adapter/service"
+
 	"github.com/prometheus/common/log"
 
 	"github.com/gin-gonic/gin"
@@ -322,16 +324,15 @@ func (ctrl Controller) createOrder(c *gin.Context) {
 	}
 	userID := userCurrent.(*domain.User).ID
 
-	userID, err := uuid.Parse(c.Param("id"))
-	if err != nil {
+	user, err := usecase.GetUser(ctrl.UserRepository, &domain.User{ID: userID})
+	if err != nil && err.Error() != "user not found" {
 		log.Error(err)
-		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "wrong id"})
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "failed get user"})
 
 		return
 	}
-
-	if userID != userID {
-		c.JSON(http.StatusForbidden, domain.SimpleResponse{Status: "permission denied"})
+	if user == nil {
+		c.JSON(http.StatusNotFound, domain.SimpleResponse{Status: "user not found"})
 
 		return
 	}
@@ -418,4 +419,86 @@ func (ctrl Controller) candlestick(c *gin.Context) {
 func (ctrl Controller) parameter(c *gin.Context) {
 	parameter := usecase.Parameter(ctrl.ParameterRepository)
 	c.JSON(http.StatusOK, parameter)
+}
+
+func (ctrl Controller) findAccounts(c *gin.Context) {
+	userCurrent, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, domain.SimpleResponse{Status: "failed get user info"})
+
+		return
+	}
+	userID := userCurrent.(*domain.User).ID
+
+	user, err := usecase.GetUser(ctrl.UserRepository, &domain.User{ID: userID})
+	if err != nil && err.Error() != "user not found" {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "failed get user"})
+
+		return
+	}
+	if user == nil {
+		c.JSON(http.StatusNotFound, domain.SimpleResponse{Status: "user not found"})
+
+		return
+	}
+	if user.Accounts == nil {
+		c.JSON(http.StatusNotFound, domain.SimpleResponse{Status: "accounts not found"})
+
+		return
+	}
+
+	res := make([]*service.BillingCreateResponse, 0, len(user.Accounts))
+	for _, acc := range user.Accounts {
+		billingAccount, err := usecase.GetBillingAccount(ctrl.BillingService, acc)
+		if err != nil {
+			log.Error(err)
+			c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "failed get billing account"})
+			return
+		}
+		res = append(res, billingAccount)
+	}
+
+	c.JSON(http.StatusOK, res)
+}
+
+func (ctrl Controller) findOrders(c *gin.Context) {
+	userCurrent, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, domain.SimpleResponse{Status: "failed get user info"})
+
+		return
+	}
+	userID := userCurrent.(*domain.User).ID
+
+	user, err := usecase.GetUser(ctrl.UserRepository, &domain.User{ID: userID})
+	if err != nil && err.Error() != "user not found" {
+		log.Error(err)
+		c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "failed get user"})
+
+		return
+	}
+	if user == nil {
+		c.JSON(http.StatusNotFound, domain.SimpleResponse{Status: "user not found"})
+
+		return
+	}
+	if user.Accounts == nil {
+		c.JSON(http.StatusNotFound, domain.SimpleResponse{Status: "accounts not found"})
+
+		return
+	}
+
+	res := make([]*domain.Order, 0)
+	for _, acc := range user.Accounts {
+		orders, err := usecase.FindOrders(ctrl.OrderService, acc)
+		if err != nil {
+			log.Error(err)
+			c.JSON(http.StatusBadRequest, domain.SimpleResponse{Status: "failed get orders by account"})
+			return
+		}
+		res = append(res, orders...)
+	}
+
+	c.JSON(http.StatusOK, res)
 }
